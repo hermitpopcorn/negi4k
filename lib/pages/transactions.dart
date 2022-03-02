@@ -197,53 +197,45 @@ class TransactionsPage extends HookWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Left color
-                    Container(
-                      width: 12,
-                      color: transactionColors[t.transaction.type],
-                      // Timestamp
-                      child: RotatedBox(
-                        quarterTurns: 3,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 1, 8, 0),
-                          child: Text(formatTime(t.transaction.timestamp), textAlign: TextAlign.end, style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          )),
-                        ),
+                    // Timestamp
+                    RotatedBox(
+                      quarterTurns: 3,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 1, 8, 0),
+                        child: Text(formatTime(t.transaction.timestamp), textAlign: TextAlign.end, style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        )),
                       ),
-                    ),
+                    ).width(12).backgroundColor(transactionColors[t.transaction.type]!),
                     // Center content
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Amount and account
-                          ListTile(
-                            leading: accountIcons[t.account.type],
-                            trailing: transactionIcons[t.transaction.type],
-                            title: Wrap(
-                              children: [
-                                amount,
-                                if (amountAfterExchange != null) const Text(' > '),
-                                if (amountAfterExchange != null) amountAfterExchange,
-                              ],
-                            ),
-                            subtitle: Text(subtitle),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Amount and account
+                        ListTile(
+                          leading: accountIcons[t.account.type],
+                          trailing: transactionIcons[t.transaction.type],
+                          title: Wrap(
+                            children: [
+                              amount,
+                              if (amountAfterExchange != null) const Text(' > '),
+                              if (amountAfterExchange != null) amountAfterExchange,
+                            ],
                           ),
-                          if (t.transaction.note != null) Padding(padding: EdgeInsets.fromLTRB(16, 0, 16, (t.transaction.tags == null ? 16 : 0)), child: Text(t.transaction.note!)),
-                          if (t.transaction.tags != null) Padding(padding: const EdgeInsets.fromLTRB(16, 0, 6, 0), child:
-                            Wrap(spacing: 4, runSpacing: 4, children: t.transaction.tags!.split(' ').map<Widget>(
-                              (tag) => TextButton(
-                                onPressed: () {  },
-                                child: Text("#$tag", style: TextStyle(color: Colors.blue[800]!)),
-                                style: ButtonStyle(minimumSize: MaterialStateProperty.all(Size.zero)),
-                              ),
-                            ).toList())
+                          subtitle: Text(subtitle),
+                        ),
+                        if (t.transaction.note != null) Text(t.transaction.note!).padding(left: 16, right: 16, bottom: t.transaction.tags == null ? 16 : 0),
+                        if (t.transaction.tags != null) Wrap(spacing: 4, runSpacing: 4, children: t.transaction.tags!.split(' ').map<Widget>(
+                          (tag) => TextButton(
+                            onPressed: () {  },
+                            child: Text("#$tag", style: TextStyle(color: Colors.blue[800]!)),
+                            style: ButtonStyle(minimumSize: MaterialStateProperty.all(Size.zero)),
                           ),
-                        ],
-                      ),
-                    ),
+                        ).toList()).padding(left: 16, right: 6)
+                      ],
+                    ).expanded(),
                     // Right color
                     Container(
                       width: 12,

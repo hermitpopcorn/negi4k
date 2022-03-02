@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get_it/get_it.dart';
+import 'package:styled_widget/styled_widget.dart';
 import 'package:material_segmented_control/material_segmented_control.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -135,24 +136,6 @@ class BottomNavigation extends StatelessWidget {
         ),
       ],
       onTap: (index) => currentTab.value = AppTabs.values[index],
-    );
-  }
-}
-
-class SecondPage extends StatelessWidget {
-  const SecondPage({Key? key, this.title}) : super(key: key);
-
-  final String? title;
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title ?? ""),
-      ),
-      body: Container(
-      ),
     );
   }
 }
