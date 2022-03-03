@@ -107,6 +107,52 @@ class TransactionsDao extends DatabaseAccessor<Database> with _$TransactionsDaoM
     );
   }
 
+  Future<List<int>> calculateIncomeExpense(DateTime? from, DateTime? to) async {
+    final joinAccount = alias(accounts, 'a');
+    final joinTarget = alias(accounts, 't');
+
+    SimpleSelectStatement<$TransactionsTable, Transaction> query = select(transactions)
+      ..orderBy([
+        (t) => OrderingTerm.desc(t.timestamp)
+      ])
+    ;
+    if (from != null) query = query..where((t) => t.timestamp.isBiggerOrEqualValue(from));
+    if (to != null) query = query..where((t) => t.timestamp.isSmallerOrEqualValue(to));
+
+    final trxs = (await query
+    .join([
+      innerJoin(joinAccount, joinAccount.id.equalsExp(transactions.account)),
+      leftOuterJoin(joinTarget, joinTarget.id.equalsExp(transactions.target)),
+    ])
+    .get())
+    .map((row) =>
+      TransactionWithAccounts(
+        transaction: row.readTable(transactions),
+        account: row.readTable(joinAccount),
+        target: row.readTableOrNull(joinTarget)
+      )
+    );
+
+    int income = 0;
+    int expense = 0;
+    for (TransactionWithAccounts trx in trxs) {
+      switch(trx.transaction.type) {
+        case TransactionType.income:
+          income += trx.transaction.amount;
+          break;
+        case TransactionType.expense:
+          expense += trx.transaction.amount;
+          break;
+        case TransactionType.transfer:
+          if (trx.determineImpact() == TransactionType.income) income += (trx.transaction.amountAfterExchange! - trx.transaction.amount).abs();
+          if (trx.determineImpact() == TransactionType.income) expense += (trx.transaction.amount - trx.transaction.amountAfterExchange!).abs();
+          break;
+      }
+    }
+
+    return [income, expense];
+  }
+
   TransactionsCompanion prepareCompanion({
     required TransactionType type, required dynamic account, dynamic target,
     required String amount, String? amountAfterExchange, String? note, String? timestamp, String? tags,

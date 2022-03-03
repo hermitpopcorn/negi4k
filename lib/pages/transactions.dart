@@ -12,44 +12,43 @@ class TransactionsPage extends HookWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Top margin
-            const SizedBox(height: 6),
-
             // Month selector
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  child: IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_left_rounded),
-                    splashRadius: 20,
-                    tooltip: 'Previous month',
-                    onPressed: () {
-                      DateTime dt = DateTime(year.value, month.value - 1, 1);
-                      year.value = dt.year;
-                      month.value = dt.month;
-                    },
+            Card(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    child: IconButton(
+                      icon: const Icon(Icons.keyboard_arrow_left_rounded),
+                      splashRadius: 20,
+                      tooltip: 'Previous month',
+                      onPressed: () {
+                        DateTime dt = DateTime(year.value, month.value - 1, 1);
+                        year.value = dt.year;
+                        month.value = dt.month;
+                      },
+                    ),
                   ),
-                ),
-                SizedBox(
-                  width: 120,
-                  child: Text("${year.value.toString().padLeft(2, '0')}-${month.value.toString().padLeft(2, '0')}", textAlign: TextAlign.center),
-                ),
-                SizedBox(
-                  child: IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_right_rounded),
-                    splashRadius: 20,
-                    tooltip: 'Next month',
-                    onPressed: () {
-                      DateTime dt = DateTime(year.value, month.value + 1, 1);
-                      year.value = dt.year;
-                      month.value = dt.month;
-                    },
+                  SizedBox(
+                    width: 120,
+                    child: Text("${year.value.toString().padLeft(2, '0')} ${month.value.toString().padLeft(2, '0')}", textAlign: TextAlign.center),
                   ),
-                ),
-              ],
-            ),
+                  SizedBox(
+                    child: IconButton(
+                      icon: const Icon(Icons.keyboard_arrow_right_rounded),
+                      splashRadius: 20,
+                      tooltip: 'Next month',
+                      onPressed: () {
+                        DateTime dt = DateTime(year.value, month.value + 1, 1);
+                        year.value = dt.year;
+                        month.value = dt.month;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ).padding(vertical: 12, horizontal: 8),
 
             // Transactions list
             StreamBuilder(
@@ -61,9 +60,6 @@ class TransactionsPage extends HookWidget {
                 return SpinKitThreeBounce(color: Colors.grey[400]!);
               }
             ),
-
-            // Bottom margin
-            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -207,7 +203,7 @@ class TransactionsPage extends HookWidget {
                           fontWeight: FontWeight.bold,
                         )),
                       ),
-                    ).width(12).backgroundColor(transactionColors[t.transaction.type]!),
+                    ).width(14).backgroundColor(transactionColors[t.transaction.type]!),
                     // Center content
                     Column(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -238,7 +234,7 @@ class TransactionsPage extends HookWidget {
                     ).expanded(),
                     // Right color
                     Container(
-                      width: 12,
+                      width: 14,
                       color: transactionColors[t.determineImpact()],
                     ),
                   ],

@@ -24,21 +24,25 @@ class Accounts extends Table {
 class AccountsDao extends DatabaseAccessor<Database> with _$AccountsDaoMixin {
   AccountsDao(Database db) : super(db);
 
-  Future<List<Account>> get allAccounts => select(accounts).get();
-  Stream<List<Account>> get watchAccounts => select(accounts).watch();
+  List<OrderingTerm Function($AccountsTable)> ordering = [(t) => OrderingTerm.asc(t.order), (t) => OrderingTerm.asc(t.createdAt)];
+
+  Future<List<Account>> get allAccounts => (select(accounts)..orderBy(ordering)).get();
+  Stream<List<Account>> get watchAccounts => (select(accounts)..orderBy(ordering)).watch();
 
   Future<int> calculateBalance(Account a, {DateTime? from, DateTime? to}) async {
-    // TODO: Time frame constraint
-
     if (a.type == AccountType.sink) { return 0; }
     int balance = a.initialBalance;
 
     final joinAccount = alias(accounts, 'a');
     final joinTarget = alias(accounts, 't');
 
-    List<TypedResult> trxs = await (select(transactions)
+    SimpleSelectStatement<$TransactionsTable, Transaction> query = select(transactions)
       ..where((t) => (t.account.equals(a.id) | t.target.equals(a.id)))
-    )
+    ;
+    if (from != null) query = query..where((t) => t.timestamp.isBiggerOrEqualValue(from));
+    if (to != null) query = query..where((t) => t.timestamp.isSmallerOrEqualValue(to));
+
+    List<TypedResult> trxs = await (query)
     .join([
       innerJoin(joinAccount, joinAccount.id.equalsExp(transactions.account)),
       leftOuterJoin(joinTarget, joinTarget.id.equalsExp(transactions.target)),

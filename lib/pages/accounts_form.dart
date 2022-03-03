@@ -1,7 +1,5 @@
 part of '../main.dart';
 
-// TODO: ordering
-
 class AccountsForm extends HookWidget {
   final Account? account;
   AccountsForm({Key? key, this.account}) : super(key: key);
@@ -15,6 +13,7 @@ class AccountsForm extends HookWidget {
     final typeState = useState(AccountType.regular);
     final initialBalanceState = useTextEditingController(text: '');
     final currencyState = useTextEditingController(text: '');
+    final orderState = useTextEditingController(text: '');
 
     useEffect(() {
       if (account == null) return;
@@ -22,6 +21,7 @@ class AccountsForm extends HookWidget {
       nameState.text = account!.name;
       initialBalanceState.text = decimalizeAmount(account!.initialBalance);
       currencyState.text = account!.currency;
+      orderState.text = account!.order.toString();
       
       return;
     }, [account]);
@@ -116,6 +116,28 @@ class AccountsForm extends HookWidget {
                     return null;
                   },
                 ),
+                TextFormField(
+                  controller: orderState,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                  ],
+                  keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: false),
+                  autocorrect: false,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    label: Text("Order"),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return null;
+
+                    final validDecimal = RegExp(r"^([0-9]+)$");
+                    if (validDecimal.hasMatch(value) == false) {
+                      return 'Invalid number.';
+                    }
+
+                    return null;
+                  },
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -133,6 +155,7 @@ class AccountsForm extends HookWidget {
                             name: nameState.value.text,
                             initialBalance: initialBalanceState.value.text.isNotEmpty ? initialBalanceState.value.text : null,
                             currency: currencyState.value.text.isNotEmpty ? currencyState.value.text : null,
+                            order: orderState.value.text.isNotEmpty ? int.parse(orderState.value.text) : null,
                           );
                         } else {
                           await getit<DataSource>().accountsDao.edit(
@@ -141,6 +164,7 @@ class AccountsForm extends HookWidget {
                             name: nameState.value.text,
                             initialBalance: initialBalanceState.value.text.isNotEmpty ? initialBalanceState.value.text : null,
                             currency: currencyState.value.text.isNotEmpty ? currencyState.value.text : null,
+                            order: orderState.value.text.isNotEmpty ? int.parse(orderState.value.text) : null,
                           );
                           editedObject = await getit<DataSource>().accountsDao.find(account!.id);
                         }

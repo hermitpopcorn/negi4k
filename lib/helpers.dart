@@ -37,18 +37,20 @@ String decimalizeAmount(int amount, {bool separator = false}) {
   return (negative ? '-' : '') + parts.join(".");
 }
 
-Wrap displayAmountWidget(int amount, {String? currency}) {
+Wrap displayAmountWidget(int amount, {String? currency, TextStyle? currencyStyle, TextStyle? numberStyle, TextStyle? decimalStyle}) {
+  decimalStyle ??= const TextStyle(fontSize: 10);
+
   List<String> s = decimalizeAmount(amount, separator: true).split('.');
   return Wrap(    
     crossAxisAlignment: WrapCrossAlignment.end,
     children: [
-      if (currency != null) Text(currency + ' '),
-      Text(s[0]),
-      Text('.' + s[1], textScaleFactor: 0.6),
+      if (currency != null) Text(currency + ' ', style: currencyStyle),
+      Text(s[0], style: numberStyle),
+      Text('.' + s[1], style: decimalStyle),
     ],
   );
 }
 
 String formatDateTime(DateTime dt) => "${dt.year.toString()}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
-String formatDate(DateTime dt) => "${dt.year.toString()}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}";
+String formatDate(DateTime dt) => "${dt.year.toString()} ${dt.month.toString().padLeft(2, '0')} ${dt.day.toString().padLeft(2, '0')}";
 String formatTime(DateTime dt) => "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
