@@ -31,9 +31,9 @@ class DashboardPage extends HookWidget {
       List<Widget> cbw = [];
       cb.forEach((c, b) {
         Widget w = displayAmountWidget(b, currency: c,
-          currencyStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-          numberStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-          decimalStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          currencyStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          numberStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          decimalStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         );
         cbw.add(w);
       });
@@ -52,22 +52,42 @@ class DashboardPage extends HookWidget {
             child: ElevatedButton(
               child: const Icon(Icons.refresh_rounded),
               onPressed: () { accountsRefresher.value += 1; },
-              style: ElevatedButton.styleFrom(fixedSize: Size(10, 10)),
             ),
           ),
+
           // Current balance
+          if (currencyBalancesWidget.value.isNotEmpty)
           Card(
             child: Column(
               children: [
-                const Text("Current balance", textAlign: TextAlign.center).width(double.infinity),
+                const Text("Current balance", textAlign: TextAlign.center).width(double.infinity).padding(bottom: 4),
                 Wrap(
                   spacing: 24,
                   direction: Axis.horizontal,
                   alignment: WrapAlignment.spaceAround,
                   children: currencyBalancesWidget.value,
-                ),
+                )
               ]
             ).padding(vertical: 12, horizontal: 12),
+          ),
+
+          // Current balance
+          FutureBuilder(
+            future: getit<DataSource>().transactionsDao.calculateIncomeExpense(getMonthStart(DateTime.now().year, DateTime.now().month), getMonthEnd(DateTime.now().year, DateTime.now().month)),
+            builder: (builder, AsyncSnapshot<Map<String, List<int>>> snapshot) {
+              if (!snapshot.hasData) return const SizedBox.shrink();
+              if (snapshot.data!.isEmpty) return const SizedBox.shrink();
+              return Card(
+                child: Column(
+                  children: [
+                    const Text("This month's income/expense", textAlign: TextAlign.center).width(double.infinity).padding(bottom: 4),
+                    Column(
+                      children: buildIncomeExpenseRows(snapshot.data!),
+                    ),
+                  ],
+                ).padding(vertical: 12, horizontal: 12),
+              );
+            }
           ),
 
           // Account balances
@@ -85,12 +105,40 @@ class DashboardPage extends HookWidget {
     );
   }
 
+  List<Widget> buildIncomeExpenseRows(Map<String, List<int>> data) {
+    List<Widget> rows = [];
+    data.forEach((String currency, List<int> incomeExpenseAmount) {
+      rows.add(
+        ClipRRect(
+          borderRadius: const BorderRadius.all(Radius.circular(6)),
+          child: LinearProgressIndicator(
+            backgroundColor: Colors.red[300]!,
+            color: Colors.green[300]!,
+            value: incomeExpenseAmount[0] / incomeExpenseAmount[1],
+            minHeight: 6,
+          ),
+        ).padding(horizontal: 4)
+      );
+
+      rows.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            displayAmountWidget(incomeExpenseAmount[0], currency: currency),
+            displayAmountWidget(incomeExpenseAmount[1], currency: currency),
+          ],
+        ).padding(horizontal: 4, vertical: 6)
+      );
+    });
+    return rows;
+  }
+
   Widget buildAccountBalances(List<Account> accounts, ValueNotifier<Map<Account, int>> accountBalancesState, Function recalculator) {
     if (accounts.isEmpty) {
-      return const Center(
-        child: Text(
+      return Center(
+        child: const Text(
           'No accounts saved.',
-        ),
+        ).padding(all: 24),
       );
     } else {
       List<Card> children = [];

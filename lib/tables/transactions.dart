@@ -107,7 +107,7 @@ class TransactionsDao extends DatabaseAccessor<Database> with _$TransactionsDaoM
     );
   }
 
-  Future<List<int>> calculateIncomeExpense(DateTime? from, DateTime? to) async {
+  Future<Map<String, List<int>>> calculateIncomeExpense(DateTime? from, DateTime? to) async {
     final joinAccount = alias(accounts, 'a');
     final joinTarget = alias(accounts, 't');
 
@@ -133,24 +133,41 @@ class TransactionsDao extends DatabaseAccessor<Database> with _$TransactionsDaoM
       )
     );
 
-    int income = 0;
-    int expense = 0;
+    SplayTreeMap<String, List<int>> cie = SplayTreeMap<String, List<int>>();
     for (TransactionWithAccounts trx in trxs) {
+      if (cie[trx.account.currency] == null) {
+        cie[trx.account.currency] = [0, 0];
+      }
+      if (trx.target != null) {
+        if (cie[trx.target!.currency] == null) {
+          cie[trx.target!.currency] = [0, 0];
+        }
+      }
+
       switch(trx.transaction.type) {
-        case TransactionType.income:
-          income += trx.transaction.amount;
+        case TransactionType.income: {
+          cie[trx.account.currency]![0] += trx.transaction.amount;
           break;
-        case TransactionType.expense:
-          expense += trx.transaction.amount;
+        }
+        case TransactionType.expense: {
+          cie[trx.account.currency]![1] += trx.transaction.amount;
           break;
-        case TransactionType.transfer:
-          if (trx.determineImpact() == TransactionType.income) income += (trx.transaction.amountAfterExchange! - trx.transaction.amount).abs();
-          if (trx.determineImpact() == TransactionType.income) expense += (trx.transaction.amount - trx.transaction.amountAfterExchange!).abs();
+        }
+        case TransactionType.transfer: {
+          if (trx.account.type != AccountType.sink && trx.target!.type != AccountType.sink) {
+            if (trx.determineImpact() == TransactionType.income) cie[trx.account.currency]![0] += (trx.transaction.amountAfterExchange! - trx.transaction.amount).abs();
+            if (trx.determineImpact() == TransactionType.income) cie[trx.account.currency]![1] += (trx.transaction.amount - trx.transaction.amountAfterExchange!).abs();
+          } else {
+            String notSinkCurrency = trx.account.type != AccountType.sink ? trx.account.currency : trx.target!.currency;
+            if (trx.determineImpact() == TransactionType.income) cie[notSinkCurrency]![0] += (trx.transaction.amountAfterExchange! - trx.transaction.amount).abs();
+            if (trx.determineImpact() == TransactionType.income) cie[notSinkCurrency]![1] += (trx.transaction.amount - trx.transaction.amountAfterExchange!).abs();
+          }
           break;
+        }
       }
     }
 
-    return [income, expense];
+    return cie;
   }
 
   TransactionsCompanion prepareCompanion({
