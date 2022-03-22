@@ -23,14 +23,12 @@ class AccountsPage extends HookWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              // TODO: Monthly balance display
-
-              // Account balances
+              // Accounts
               StreamBuilder(
                 stream: getit<DataSource>().accountsDao.watchAccounts,
                 builder: (BuildContext context, AsyncSnapshot<List<Account>> snapshot) {
                   if (snapshot.data != null) {
-                    return buildAccountBalances(context, snapshot.data!);
+                    return buildAccountCards(context, snapshot.data!);
                   }
                   return SpinKitThreeBounce(color: Colors.grey[400]!);
                 }
@@ -42,7 +40,7 @@ class AccountsPage extends HookWidget {
     );
   }
 
-  Widget buildAccountBalances(BuildContext context, List<Account> accounts) {
+  Widget buildAccountCards(BuildContext context, List<Account> accounts) {
     if (accounts.isEmpty) {
       return const Center(
         child: Text(

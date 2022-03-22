@@ -118,7 +118,7 @@ class DashboardPage extends HookWidget {
           child: LinearProgressIndicator(
             backgroundColor: Colors.red[300]!,
             color: Colors.green[300]!,
-            value: incomeExpenseAmount[0] / incomeExpenseAmount[1],
+            value: incomeExpenseAmount[0] / (incomeExpenseAmount[0] + incomeExpenseAmount[1]),
             minHeight: 6,
           ),
         ).padding(horizontal: 4)
