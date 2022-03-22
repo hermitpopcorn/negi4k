@@ -15,69 +15,69 @@ class TransactionsPage extends HookWidget {
           IconButton(
             icon: const Icon(Icons.add_rounded),
             tooltip: 'Add transaction',
-            onPressed: () { openForm(context); },
+            onPressed: () { openForm(context, year: year, month: month); },
             splashRadius: 20,
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Month selector
-            Card(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    child: IconButton(
-                      icon: const Icon(Icons.keyboard_arrow_left_rounded),
-                      splashRadius: 20,
-                      tooltip: 'Previous month',
-                      onPressed: () {
-                        DateTime dt = DateTime(year.value, month.value - 1, 1);
-                        year.value = dt.year;
-                        month.value = dt.month;
-                      },
-                    ),
+      body: Column(
+        children: [
+          // Month selector
+          Card(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  child: IconButton(
+                    icon: const Icon(Icons.keyboard_arrow_left_rounded),
+                    splashRadius: 20,
+                    tooltip: 'Previous month',
+                    onPressed: () {
+                      DateTime dt = DateTime(year.value, month.value - 1, 1);
+                      year.value = dt.year;
+                      month.value = dt.month;
+                    },
                   ),
-                  SizedBox(
-                    width: 120,
-                    child: Text("${year.value.toString().padLeft(2, '0')} ${month.value.toString().padLeft(2, '0')}", textAlign: TextAlign.center),
+                ),
+                SizedBox(
+                  width: 120,
+                  child: Text("${year.value.toString().padLeft(2, '0')} ${month.value.toString().padLeft(2, '0')}", textAlign: TextAlign.center),
+                ),
+                SizedBox(
+                  child: IconButton(
+                    icon: const Icon(Icons.keyboard_arrow_right_rounded),
+                    splashRadius: 20,
+                    tooltip: 'Next month',
+                    onPressed: () {
+                      DateTime dt = DateTime(year.value, month.value + 1, 1);
+                      year.value = dt.year;
+                      month.value = dt.month;
+                    },
                   ),
-                  SizedBox(
-                    child: IconButton(
-                      icon: const Icon(Icons.keyboard_arrow_right_rounded),
-                      splashRadius: 20,
-                      tooltip: 'Next month',
-                      onPressed: () {
-                        DateTime dt = DateTime(year.value, month.value + 1, 1);
-                        year.value = dt.year;
-                        month.value = dt.month;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ).padding(vertical: 12, horizontal: 8),
+                ),
+              ],
+            ),
+          ).padding(vertical: 12, horizontal: 8),
 
-            // Transactions list
-            StreamBuilder(
+          // Transactions list
+          SingleChildScrollView(
+            child: StreamBuilder(
               stream: getit<DataSource>().transactionsDao.watchTransactionsBetween(getMonthStart(year.value, month.value), getMonthEnd(year.value, month.value)),
               builder: (BuildContext context, AsyncSnapshot<List<TransactionWithAccounts>> snapshot) {
                 if (snapshot.data != null) {
-                  return buildTransactionList(snapshot.data!);
+                  return buildTransactionList(snapshot.data!, year, month);
                 }
                 return SpinKitThreeBounce(color: Colors.grey[400]!);
               }
             ),
-          ],
-        ),
+          ).expanded(),
+        ],
       ),
     );
   }
 
-  Widget buildTransactionList(List<TransactionWithAccounts> transactions) {
+  Widget buildTransactionList(List<TransactionWithAccounts> transactions, ValueNotifier<int>? year, ValueNotifier<int>? month) {
     if (transactions.isEmpty) {
       return Center(
         child: Icon(Icons.more_horiz_rounded, size: 86, color: Colors.grey[300]!),
@@ -162,7 +162,7 @@ class TransactionsPage extends HookWidget {
               motion: const ScrollMotion(),
               children: [
                 SlidableAction(
-                  onPressed: (context) { openForm(context, t.transaction); },
+                  onPressed: (context) { openForm(context, transaction: t.transaction, year: year, month: month); },
                   backgroundColor: Colors.teal[300]!,
                   foregroundColor: Colors.white,
                   icon: Icons.edit_rounded,
@@ -242,14 +242,20 @@ class TransactionsPage extends HookWidget {
         children.add(const SizedBox(height: 4));
       }
 
-      return ListView(physics: const ClampingScrollPhysics(), scrollDirection: Axis.vertical, shrinkWrap: true, children: children);
+      return ListView.builder(physics: const ClampingScrollPhysics(), scrollDirection: Axis.vertical, shrinkWrap: true,
+        itemCount: children.length,
+        itemBuilder: (context, index) {
+          return children[index];
+        },
+      );
     }
   }
 
-  void openForm(BuildContext context, [Transaction? transaction]) {
+  void openForm(BuildContext context, { Transaction? transaction, ValueNotifier<int>? year, ValueNotifier<int>? month }) {
     Navigator.of(context).push(MaterialPageRoute(builder: (context) => TransactionsForm(transaction: transaction))).then((dynamic t) {
-      if (t is Transaction) {
-        // TODO: show transaction
+      if (t is Transaction && year != null && month != null) {
+        year.value = t.timestamp.year;
+        month.value = t.timestamp.month;
       }
     });
   }

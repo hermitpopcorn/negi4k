@@ -90,7 +90,7 @@ class App extends HookWidget {
         ],
       ),
       bottomNavigationBar: BottomNavigation(currentTab: currentTab),
-  );
+    );
   }
 }
 
