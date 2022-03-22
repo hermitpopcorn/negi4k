@@ -41,67 +41,71 @@ class DashboardPage extends HookWidget {
       currencyBalancesWidget.value = cbw;
     }
 
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          // Refresh
-          Container(
-            alignment: Alignment.topRight,
-            child: ElevatedButton(
-              child: const Icon(Icons.refresh_rounded),
-              onPressed: () { accountsRefresher.value += 1; },
-            ),
-          ),
-
-          // Current balance
-          if (currencyBalancesWidget.value.isNotEmpty)
-          Card(
-            child: Column(
-              children: [
-                const Text("Current balance", textAlign: TextAlign.center).width(double.infinity).padding(bottom: 4),
-                Wrap(
-                  spacing: 24,
-                  direction: Axis.horizontal,
-                  alignment: WrapAlignment.spaceAround,
-                  children: currencyBalancesWidget.value,
-                )
-              ]
-            ).padding(vertical: 12, horizontal: 12),
-          ),
-
-          // Current balance
-          FutureBuilder(
-            future: getit<DataSource>().transactionsDao.calculateIncomeExpense(getMonthStart(DateTime.now().year, DateTime.now().month), getMonthEnd(DateTime.now().year, DateTime.now().month)),
-            builder: (builder, AsyncSnapshot<Map<String, List<int>>> snapshot) {
-              if (!snapshot.hasData) return const SizedBox.shrink();
-              if (snapshot.data!.isEmpty) return const SizedBox.shrink();
-              return Card(
-                child: Column(
-                  children: [
-                    const Text("This month's income/expense", textAlign: TextAlign.center).width(double.infinity).padding(bottom: 4),
-                    Column(
-                      children: buildIncomeExpenseRows(snapshot.data!),
-                    ),
-                  ],
-                ).padding(vertical: 12, horizontal: 12),
-              );
-            }
-          ),
-
-          // Account balances
-          StreamBuilder(
-            stream: getit<DataSource>().accountsDao.watchAccounts,
-            builder: (BuildContext context, AsyncSnapshot<List<Account>> snapshot) {
-              if (snapshot.data != null) {
-                return buildAccountBalances(snapshot.data!, accountBalances, recalculateBalances);
-              }
-              return SpinKitThreeBounce(color: Colors.grey[400]!);
-            }
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Dashboard"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh',
+            onPressed: () { accountsRefresher.value += 1; },
+            splashRadius: 20,
           ),
         ],
-      ).padding(vertical: 12, horizontal: 8),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[ 
+            // Current balance
+            if (currencyBalancesWidget.value.isNotEmpty)
+            Card(
+              child: Column(
+                children: [
+                  const Text("Current balance", textAlign: TextAlign.center).width(double.infinity).padding(bottom: 4),
+                  Wrap(
+                    spacing: 24,
+                    direction: Axis.horizontal,
+                    alignment: WrapAlignment.spaceAround,
+                    children: currencyBalancesWidget.value,
+                  )
+                ]
+              ).padding(vertical: 12, horizontal: 12),
+            ),
+
+            // Current balance
+            FutureBuilder(
+              future: getit<DataSource>().transactionsDao.calculateIncomeExpense(getMonthStart(DateTime.now().year, DateTime.now().month), getMonthEnd(DateTime.now().year, DateTime.now().month)),
+              builder: (builder, AsyncSnapshot<Map<String, List<int>>> snapshot) {
+                if (!snapshot.hasData) return const SizedBox.shrink();
+                if (snapshot.data!.isEmpty) return const SizedBox.shrink();
+                return Card(
+                  child: Column(
+                    children: [
+                      const Text("This month's income/expense", textAlign: TextAlign.center).width(double.infinity).padding(bottom: 4),
+                      Column(
+                        children: buildIncomeExpenseRows(snapshot.data!),
+                      ),
+                    ],
+                  ).padding(vertical: 12, horizontal: 12),
+                );
+              }
+            ),
+
+            // Account balances
+            StreamBuilder(
+              stream: getit<DataSource>().accountsDao.watchAccounts,
+              builder: (BuildContext context, AsyncSnapshot<List<Account>> snapshot) {
+                if (snapshot.data != null) {
+                  return buildAccountBalances(snapshot.data!, accountBalances, recalculateBalances);
+                }
+                return SpinKitThreeBounce(color: Colors.grey[400]!);
+              }
+            ),
+          ],
+        ).padding(vertical: 12, horizontal: 8),
+      )
     );
   }
 

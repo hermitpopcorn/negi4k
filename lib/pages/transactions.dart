@@ -9,6 +9,17 @@ class TransactionsPage extends HookWidget {
     final month = useState<int>(DateTime.now().month);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Transactions"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_rounded),
+            tooltip: 'Add transaction',
+            onPressed: () { openForm(context); },
+            splashRadius: 20,
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -59,21 +70,6 @@ class TransactionsPage extends HookWidget {
                 }
                 return SpinKitThreeBounce(color: Colors.grey[400]!);
               }
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.all(0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            const SizedBox(width: 10),
-            FloatingActionButton(
-              onPressed: () { openForm(context); },
-              tooltip: 'Add',
-              heroTag: 'btnAddTransaction',
-              child: const Icon(Icons.add_rounded),
             ),
           ],
         ),

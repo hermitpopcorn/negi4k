@@ -6,6 +6,17 @@ class AccountsPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Accounts"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_rounded),
+            tooltip: 'Add account',
+            onPressed: () { openForm(context); },
+            splashRadius: 20,
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
         child: SingleChildScrollView(
@@ -26,21 +37,6 @@ class AccountsPage extends HookWidget {
               ),
             ],
           ),
-        ),
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.all(0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            const SizedBox(width: 10),
-            FloatingActionButton(
-              onPressed: () { openForm(context); },
-              tooltip: 'Add',
-              heroTag: 'btnAddAccount',
-              child: const Icon(Icons.add_rounded),
-            ),
-          ],
         ),
       ),
     );

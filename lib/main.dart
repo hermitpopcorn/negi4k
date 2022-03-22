@@ -22,12 +22,6 @@ enum AppTabs {
   accounts,
 }
 
-final Map<AppTabs, String> tabNames = {
-  AppTabs.dashboard: 'Dashboard',
-  AppTabs.transactions: 'Transactions',
-  AppTabs.accounts: 'Accounts',
-};
-
 final Map<AccountType, Color> accountColors = {
   AccountType.regular: Colors.green[200]!,
   AccountType.sink: Colors.red[200]!,
@@ -79,35 +73,24 @@ class App extends HookWidget {
     final currentTab = useState(AppTabs.dashboard);      
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: Scaffold(
-        body: Stack(
-          children: <Widget>[
-            Offstage(
-              offstage: currentTab.value != AppTabs.dashboard,
-              child: TickerMode(
-                enabled: currentTab.value == AppTabs.dashboard,
-                child: const DashboardPage(),
-              ),
-            ),
-            Offstage(
-              offstage: currentTab.value != AppTabs.transactions,
-              child: TickerMode(
-                enabled: currentTab.value == AppTabs.transactions,
-                child: const TransactionsPage(),
-              ),
-            ),
-            Offstage(
-              offstage: currentTab.value != AppTabs.accounts,
-              child: const AccountsPage(),
-            ),
-          ],
-        ),
+      body: Stack(
+        children: <Widget>[
+          Offstage(
+            offstage: currentTab.value != AppTabs.dashboard,
+            child: const DashboardPage(),
+          ),
+          Offstage(
+            offstage: currentTab.value != AppTabs.transactions,
+            child: const TransactionsPage(),
+          ),
+          Offstage(
+            offstage: currentTab.value != AppTabs.accounts,
+            child: const AccountsPage(),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigation(currentTab: currentTab),
-    );
+  );
   }
 }
 
@@ -119,20 +102,22 @@ class BottomNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
       type: BottomNavigationBarType.fixed,
       currentIndex: currentTab.value.index,
-      items: [
+      items: const [
         BottomNavigationBarItem(
-          icon: const Icon(Icons.space_dashboard_rounded),
-          label: tabNames[AppTabs.dashboard],
+          icon: Icon(Icons.space_dashboard_rounded),
+          label: "",
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.compare_arrows_rounded),
-          label: tabNames[AppTabs.transactions],
+          icon: Icon(Icons.compare_arrows_rounded),
+          label: "",
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.storage_rounded),
-          label: tabNames[AppTabs.accounts],
+          icon: Icon(Icons.storage_rounded),
+          label: "",
         ),
       ],
       onTap: (index) => currentTab.value = AppTabs.values[index],
